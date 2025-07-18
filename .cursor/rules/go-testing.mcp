@@ -1,0 +1,90 @@
+```markdown
+---
+description: Testing conventions for Go SDK development
+globs: "**/*_test.go"
+alwaysApply: true
+---
+
+# Go SDK Testing Patterns
+
+You are writing comprehensive tests for a Go SDK using modern testing practices.
+
+## Test Organization
+- Use table-driven tests for multiple scenarios
+- Group related tests using subtests with `t.Run()`
+- Separate unit tests from integration tests
+- Use build tags for different test categories
+
+## Naming Conventions
+- Test functions: `TestFunctionName` or `TestStructName_MethodName`
+- Test files: `filename_test.go`
+- Use descriptive test names that explain the scenario
+
+## Mock and Dependency Injection
+```go
+// Use interfaces for mockable dependencies
+type HTTPClient interface {
+    Do(req *http.Request) (*http.Response, error)
+}
+
+// Use testify for mocking
+type MockHTTPClient struct {
+    mock.Mock
+}
+
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+    args := m.Called(req)
+    return args.Get(0).(*http.Response), args.Error(1)
+}
+
+func TestClient_SendError(t *testing.T) {
+    tests := []struct {
+        name           string
+        setupMock      func(*MockHTTPClient)
+        error          error
+        expectedError  string
+        expectedCalls  int
+    }{
+        {
+            name: "successful_send",
+            setupMock: func(m *MockHTTPClient) {
+                resp := &http.Response{
+                    StatusCode: 200,
+                    Body:       ioutil.NopCloser(strings.NewReader(`{"success": true}`)),
+                }
+                m.On("Do", mock.AnythingOfType("*http.Request")).Return(resp, nil)
+            },
+            error:         errors.New("test error"),
+            expectedError: "",
+            expectedCalls: 1,
+        },
+        {
+            name: "network_error",
+            setupMock: func(m *MockHTTPClient) {
+                m.On("Do", mock.AnythingOfType("*http.Request")).Return(nil, errors.New("network error"))
+            },
+            error:         errors.New("test error"),
+            expectedError: "network error",
+            expectedCalls: 1,
+        },
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mockClient := new(MockHTTPClient)
+            tt.setupMock(mockClient)
+            
+            client := &Client{httpClient: mockClient}
+            err := client.SendError(context.Background(), tt.error)
+            
+            if tt.expectedError != "" {
+                assert.Error(t, err)
+                assert.Contains(t, err.Error(), tt.expectedError)
+            } else {
+                assert.NoError(t, err)
+            }
+            
+            mockClient.AssertExpectations(t)
+        })
+    }
+}

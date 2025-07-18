@@ -1,0 +1,64 @@
+
+
+```markdown
+---
+description: Core Go development standards and SDK patterns
+globs: "**/*.go"
+alwaysApply: true
+---
+
+# Go SDK Development Standards
+
+You are an expert Go developer creating a production-ready error reporting SDK. Follow these principles:
+
+## Project Structure
+- Use standard Go project layout with `cmd/`, `internal/`, `pkg/` directories
+- Place public SDK interfaces in `pkg/` directory
+- Keep internal implementation details in `internal/`
+- Use `cmd/` for example applications and tools
+
+## Coding Standards
+- Follow effective Go principles and idioms
+- Use `gofmt` and `goimports` for consistent formatting
+- Implement proper error handling with wrapped errors using `fmt.Errorf` with `%w`
+- Use context.Context as first parameter for functions with I/O operations
+- Prefer interfaces over concrete types for better testability
+
+## SDK Design Patterns
+- Use functional options pattern for client configuration
+- Implement builder pattern for complex configurations
+- Design interfaces as contracts, return structs
+- Use dependency injection through interfaces
+- Implement graceful degradation for partial failures
+
+## Example SDK Client Pattern
+```go
+type Client struct {
+    httpClient HTTPClient
+    config     Config
+}
+
+type HTTPClient interface {
+    Do(req *http.Request) (*http.Response, error)
+}
+
+func NewClient(options ...Option) *Client {
+    c := &Client{
+        httpClient: &http.Client{Timeout: 30 * time.Second},
+        config:     DefaultConfig(),
+    }
+    
+    for _, option := range options {
+        option(c)
+    }
+    
+    return c
+}
+
+type Option func(*Client)
+
+func WithTimeout(timeout time.Duration) Option {
+    return func(c *Client) {
+        c.httpClient = &http.Client{Timeout: timeout}
+    }
+}

@@ -1,0 +1,49 @@
+```markdown
+---
+description: Error handling patterns and reporting strategies
+globs: "**/*error*.go"
+alwaysApply: true
+---
+
+# Error Handling and Reporting Patterns
+
+You are implementing robust error handling for a Go SDK that reports errors to external services.
+
+## Error Type Design
+- Create structured error types with HTTP status codes
+- Implement error categorization (validation, network, auth, rate limit)
+- Use error wrapping to preserve context and stack traces
+- Provide both machine-readable and human-readable error information
+
+## Error Categorization
+```go
+type ErrorType string
+
+const (
+    ErrorTypeValidation ErrorType = "validation"
+    ErrorTypeNetwork    ErrorType = "network"
+    ErrorTypeAuth       ErrorType = "authentication"
+    ErrorTypeRate       ErrorType = "rate_limit"
+    ErrorTypeInternal   ErrorType = "internal"
+)
+
+type SDKError struct {
+    Type        ErrorType
+    Code        string
+    Message     string
+    Underlying  error
+    Context     map[string]interface{}
+    Timestamp   time.Time
+    Retryable   bool
+}
+
+func (e *SDKError) Error() string {
+    if e.Underlying != nil {
+        return fmt.Sprintf("%s: %s: %v", e.Type, e.Message, e.Underlying)
+    }
+    return fmt.Sprintf("%s: %s", e.Type, e.Message)
+}
+
+func (e *SDKError) Unwrap() error {
+    return e.Underlying
+}

@@ -1,0 +1,41 @@
+---
+description: AI-assisted development best practices for iterative, maintainable code
+globs: "**/*.go"
+priority: high
+alwaysApply: true
+---
+
+# AI Development Best Practices
+
+You are an AI assistant helping build a Go error reporting SDK. Follow these practices for effective AI-assisted development:
+
+## Incremental Development Principles
+
+### Small, Focused Changes
+- **Maximum 3-5 files per iteration**: Never modify more than 3-5 files in a single response
+- **Single responsibility per change**: Each iteration should focus on ONE specific feature or fix
+- **Complete before expanding**: Fully implement and test current functionality before adding new features
+- **Atomic commits**: Each change should be independently deployable and testable
+
+### Iteration Strategy
+```go
+// ✅ GOOD: Small, focused iteration
+// Iteration 1: Basic error type
+type SDKError struct {
+    Type    ErrorType
+    Message string
+    Code    string
+}
+
+// Iteration 2: Add context and wrapping
+type SDKError struct {
+    Type       ErrorType
+    Message    string
+    Code       string
+    Context    map[string]interface{} // NEW
+    Underlying error                   // NEW
+}
+
+// ❌ BAD: Trying to implement everything at once
+// Don't create complex error system + HTTP client + Telegram integration + tests all in one go
+

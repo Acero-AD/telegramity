@@ -1,0 +1,44 @@
+```markdown
+---
+description: Telegram Bot API integration for error notifications
+globs: "**/*telegram*.go"
+alwaysApply: true
+---
+
+# Telegram Bot Integration Patterns
+
+You are implementing Telegram bot integration for error notifications using modern Go patterns.
+
+## Recommended Libraries
+- Use `github.com/go-telegram-bot-api/telegram-bot-api/v5` for production stability
+- Consider `github.com/mymmrac/telego` for full API coverage
+- Use `github.com/go-telegram/bot` for modern middleware support
+
+## Bot Client Design
+```go
+type TelegramReporter struct {
+    bot        *tgbotapi.BotAPI
+    chatID     int64
+    limiter    *rate.Limiter
+    formatter  MessageFormatter
+}
+
+func NewTelegramReporter(token string, chatID int64, options ...TelegramOption) (*TelegramReporter, error) {
+    bot, err := tgbotapi.NewBotAPI(token)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create bot: %w", err)
+    }
+    
+    reporter := &TelegramReporter{
+        bot:       bot,
+        chatID:    chatID,
+        limiter:   rate.NewLimiter(rate.Every(time.Second), 1), // 1 msg/sec
+        formatter: DefaultMessageFormatter{},
+    }
+    
+    for _, option := range options {
+        option(reporter)
+    }
+    
+    return reporter, nil
+}

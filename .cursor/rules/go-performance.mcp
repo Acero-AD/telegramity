@@ -1,0 +1,57 @@
+```markdown
+---
+description: Performance optimization patterns for Go SDKs
+globs: "**/*.go"
+priority: low
+alwaysApply: false
+---
+
+# Performance Optimization Patterns
+
+You are optimizing a Go SDK for high-performance error reporting with minimal overhead.
+
+## Memory Management
+- Use sync.Pool for frequently allocated objects
+- Implement object pooling for heavy structs
+- Use streaming for large data transfers
+- Avoid unnecessary allocations in hot paths
+
+## Concurrency Patterns
+```go
+// Worker pool for concurrent processing
+type WorkerPool struct {
+    workers    int
+    jobQueue   chan Job
+    workerPool chan chan Job
+    quit       chan bool
+}
+
+func NewWorkerPool(workers int) *WorkerPool {
+    return &WorkerPool{
+        workers:    workers,
+        jobQueue:   make(chan Job, 100),
+        workerPool: make(chan chan Job, workers),
+        quit:       make(chan bool),
+    }
+}
+
+func (p *WorkerPool) Start() {
+    for i := 0; i < p.workers; i++ {
+        worker := NewWorker(p.workerPool)
+        worker.Start()
+    }
+    
+    go p.dispatch()
+}
+
+func (p *WorkerPool) dispatch() {
+    for {
+        select {
+        case job := <-p.jobQueue:
+            worker := <-p.workerPool
+            worker <- job
+        case <-p.quit:
+            return
+        }
+    }
+}
