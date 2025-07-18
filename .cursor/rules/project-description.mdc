@@ -1,11 +1,7 @@
-```markdown
 ---
 description: General project description
-globs: "**/*.go"
-priority: high
 alwaysApply: false
 ---
-
 ## Project description
 
 The project is a basic SDK/API that is used to catch errors in your apps and send the message to a telegram account you have configured for your user.

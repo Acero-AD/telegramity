@@ -1,4 +1,3 @@
-```markdown
 ---
 description: Telegram Bot API integration for error notifications
 globs: "**/*telegram*.go"

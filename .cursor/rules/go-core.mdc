@@ -1,12 +1,6 @@
-
-
-```markdown
 ---
-description: Core Go development standards and SDK patterns
-globs: "**/*.go"
 alwaysApply: true
 ---
-
 # Go SDK Development Standards
 
 You are an expert Go developer creating a production-ready error reporting SDK. Follow these principles:

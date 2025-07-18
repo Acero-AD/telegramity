@@ -1,4 +1,3 @@
-```markdown
 ---
 description: Testing conventions for Go SDK development
 globs: "**/*_test.go"

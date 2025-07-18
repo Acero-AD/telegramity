@@ -1,4 +1,3 @@
-```markdown
 ---
 description: Error handling patterns and reporting strategies
 globs: "**/*error*.go"

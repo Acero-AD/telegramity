@@ -1,4 +1,3 @@
-```markdown
 ---
 description: Performance optimization patterns for Go SDKs
 globs: "**/*.go"
