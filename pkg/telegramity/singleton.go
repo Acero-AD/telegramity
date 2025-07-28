@@ -2,19 +2,21 @@ package telegramity
 
 import (
 	"sync"
+
+	"github.com/somosbytes/telegramity/internal/configs"
+	"github.com/somosbytes/telegramity/internal/telegram/bot"
+	"github.com/somosbytes/telegramity/internal/telegramity"
 )
 
 var (
-	globalClient Client
+	globalClient bot.Client
 	globalOnce   sync.Once
 	globalErr    error
 )
 
-// InitGlobalClient initializes the global client singleton
-// Call this once at the start of your application
-func InitGlobalClient(botToken string, chatID int64, options ...ConfigOption) error {
+func InitGlobalClient(botToken string, chatID int64, options ...configs.ConfigOption) error {
 	globalOnce.Do(func() {
-		client, err := NewClient(botToken, chatID, options...)
+		client, err := telegramity.NewClient(botToken, chatID, options...)
 		if err != nil {
 			globalErr = err
 			return
@@ -24,16 +26,13 @@ func InitGlobalClient(botToken string, chatID int64, options ...ConfigOption) er
 	return globalErr
 }
 
-// GetGlobalClient returns the global client instance
-// Panics if InitGlobalClient hasn't been called
-func GetGlobalClient() Client {
+func GetGlobalClient() bot.Client {
 	if globalClient == nil {
 		panic("telegramity: global client not initialized. Call InitGlobalClient first")
 	}
 	return globalClient
 }
 
-// CloseGlobalClient closes the global client
 func CloseGlobalClient() error {
 	if globalClient != nil {
 		return globalClient.Close()

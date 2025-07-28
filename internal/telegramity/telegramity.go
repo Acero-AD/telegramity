@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/somosbytes/telegramity/internal/configs"
 	"github.com/somosbytes/telegramity/internal/telegram/bot"
 )
 
-func NewClient(botToken string, chatID int64, options ...ConfigOption) (Client, error) {
+func NewClient(botToken string, chatID int64, options ...configs.ConfigOption) (bot.Client, error) {
 	// Create default configuration
-	config := DefaultConfig()
+	config := configs.DefaultConfig()
 	config.BotToken = botToken
 	config.ChatID = chatID
 
@@ -31,7 +32,7 @@ func NewClient(botToken string, chatID int64, options ...ConfigOption) (Client, 
 }
 
 // newClient creates the internal client implementation
-func newClient(config *Config) (Client, error) {
+func newClient(config *configs.Config) (bot.Client, error) {
 	// Create the bot client
 	botClient, err := bot.NewBotClient(config.BotToken, config.Timeout)
 	if err != nil {
@@ -42,11 +43,7 @@ func newClient(config *Config) (Client, error) {
 	rateLimiter := time.NewTicker(time.Duration(1000/config.RateLimitPerSecond) * time.Millisecond)
 
 	// Create the main client implementation
-	client := &client{
-		config:      config,
-		bot:         botClient,
-		rateLimiter: rateLimiter,
-	}
+	client := bot.NewClient(config, botClient, rateLimiter)
 
 	return client, nil
 }

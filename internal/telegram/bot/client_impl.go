@@ -1,4 +1,4 @@
-package telegramity
+package bot
 
 import (
 	"context"
@@ -7,16 +7,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/somosbytes/telegramity/internal/telegram/bot"
+	"github.com/somosbytes/telegramity/internal/configs"
+	"github.com/somosbytes/telegramity/internal/errors"
 )
 
 // Client is the main interface for the Telegramity SDK
 type Client interface {
 	// ReportError sends an error to the configured Telegram bot
-	ReportError(ctx context.Context, err error, errorType string, opts ...ErrorOption) error
+	ReportError(ctx context.Context, err error, errorType string, opts ...errors.ErrorOption) error
 
 	// ReportErrorWithContext sends an error with additional context
-	ReportErrorWithContext(ctx context.Context, err error, errorType string, context map[string]interface{}, opts ...ErrorOption) error
+	ReportErrorWithContext(ctx context.Context, err error, errorType string, context map[string]interface{}, opts ...errors.ErrorOption) error
 
 	// Close gracefully shuts down the client
 	Close() error
@@ -24,20 +25,28 @@ type Client interface {
 
 // client implements the telegramity.Client interface
 type client struct {
-	config      *Config
-	bot         bot.BotClient
+	config      *configs.Config
+	bot         BotClient
 	rateLimiter *time.Ticker
 	mu          sync.RWMutex
 	closed      bool
 }
 
+func NewClient(config *configs.Config, botClient BotClient, rateLimiter *time.Ticker) Client {
+	return &client{
+		config:      config,
+		bot:         botClient,
+		rateLimiter: rateLimiter,
+	}
+}
+
 // ReportError implements telegramity.Client.ReportError
-func (c *client) ReportError(ctx context.Context, err error, errorType string, opts ...ErrorOption) error {
+func (c *client) ReportError(ctx context.Context, err error, errorType string, opts ...errors.ErrorOption) error {
 	return c.ReportErrorWithContext(ctx, err, errorType, nil, opts...)
 }
 
 // ReportErrorWithContext implements telegramity.Client.ReportErrorWithContext
-func (c *client) ReportErrorWithContext(ctx context.Context, err error, errorType string, context map[string]interface{}, opts ...ErrorOption) error {
+func (c *client) ReportErrorWithContext(ctx context.Context, err error, errorType string, context map[string]interface{}, opts ...errors.ErrorOption) error {
 	c.mu.RLock()
 	if c.closed {
 		c.mu.RUnlock()
@@ -49,8 +58,7 @@ func (c *client) ReportErrorWithContext(ctx context.Context, err error, errorTyp
 		return fmt.Errorf("error cannot be nil")
 	}
 
-	// Create error report using our new function
-	report := createErrorReport(err, errorType, opts...)
+	report := errors.CreateErrorReport(err, errorType, opts...)
 
 	// Add context if provided
 	if context != nil {
@@ -117,7 +125,7 @@ func (c *client) Close() error {
 }
 
 // formatErrorReport formats an error report into a Telegram message
-func (c *client) formatErrorReport(report *ErrorReport) (string, error) {
+func (c *client) formatErrorReport(report *errors.ErrorReport) (string, error) {
 	message := "🚨 <b>Error Report</b>\n\n"
 
 	// Add timestamp if configured
