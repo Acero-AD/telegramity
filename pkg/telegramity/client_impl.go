@@ -3,6 +3,7 @@ package telegramity
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -157,8 +158,46 @@ func (c *client) formatErrorReport(report *ErrorReport) (string, error) {
 
 	// Add stack trace if configured
 	if c.config.IncludeStackTrace && report.StackTrace != "" {
-		message += fmt.Sprintf("\n🔍 <b>Stack Trace:</b>\n<code>%s</code>", report.StackTrace)
+		// Format stack trace for better readability
+		stackTrace := c.formatStackTrace(report.StackTrace)
+		message += fmt.Sprintf("\n🔍 <b>Stack Trace:</b>\n<pre><code>%s</code></pre>", stackTrace)
 	}
 
 	return message, nil
+}
+
+// formatStackTrace formats a stack trace for better readability in Telegram
+func (c *client) formatStackTrace(stackTrace string) string {
+	// Split into lines for processing
+	lines := strings.Split(stackTrace, "\n")
+
+	// Filter and format lines
+	var formattedLines []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		// Highlight important parts (file paths, line numbers)
+		if strings.Contains(line, ".go:") {
+			// This is a file:line reference
+			formattedLines = append(formattedLines, fmt.Sprintf("📍 %s", line))
+		} else if strings.Contains(line, "github.com/") || strings.Contains(line, "main.") {
+			// This is a function call
+			formattedLines = append(formattedLines, fmt.Sprintf("🔗 %s", line))
+		} else {
+			// Regular line
+			formattedLines = append(formattedLines, line)
+		}
+	}
+
+	// Limit the number of lines to avoid huge messages
+	maxLines := 20
+	if len(formattedLines) > maxLines {
+		formattedLines = formattedLines[:maxLines]
+		formattedLines = append(formattedLines, "...")
+	}
+
+	return strings.Join(formattedLines, "\n")
 }
