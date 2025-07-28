@@ -9,7 +9,7 @@ import (
 )
 
 func resetSingletonForTesting() {
-	telegramity.CloseGlobalClient()
+	_ = telegramity.CloseGlobalClient()
 }
 
 func TestInitGlobalClient(t *testing.T) {

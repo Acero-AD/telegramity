@@ -20,7 +20,7 @@ func TestSingletonIntegration(t *testing.T) {
 	}
 
 	t.Run("successful_initialization", func(t *testing.T) {
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 
 		err := telegramity.InitGlobalClient(botToken, 123456789) // Using fake chat ID for safety
 		if err != nil {
@@ -39,7 +39,7 @@ func TestSingletonIntegration(t *testing.T) {
 	})
 
 	t.Run("multiple_initialization_calls", func(t *testing.T) {
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 
 		err1 := telegramity.InitGlobalClient(botToken, 123456789)
 		if err1 != nil {
@@ -59,11 +59,11 @@ func TestSingletonIntegration(t *testing.T) {
 			t.Errorf("Expected same client instance, got different instances")
 		}
 
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 	})
 
 	t.Run("initialization_after_close", func(t *testing.T) {
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 
 		err1 := telegramity.InitGlobalClient(botToken, 123456789)
 		if err1 != nil {
@@ -88,11 +88,11 @@ func TestSingletonIntegration(t *testing.T) {
 			t.Errorf("Expected different client instances after re-initialization")
 		}
 
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 	})
 
 	t.Run("configuration_options", func(t *testing.T) {
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 
 		err := telegramity.InitGlobalClient(botToken, 123456789,
 			telegramity.WithTimeout(5),
@@ -109,7 +109,7 @@ func TestSingletonIntegration(t *testing.T) {
 			t.Errorf("Expected client but got nil")
 		}
 
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 	})
 }
 
@@ -123,7 +123,7 @@ func TestErrorReporting(t *testing.T) {
 	}
 
 	t.Run("report_error", func(t *testing.T) {
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 
 		err := telegramity.InitGlobalClient(botToken, 123456789)
 		if err != nil {
@@ -137,6 +137,6 @@ func TestErrorReporting(t *testing.T) {
 			t.Errorf("Failed to report error: %v", reportErr)
 		}
 
-		telegramity.CloseGlobalClient()
+		_ = telegramity.CloseGlobalClient()
 	})
 }
