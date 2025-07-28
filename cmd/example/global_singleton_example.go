@@ -48,7 +48,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize global client: %v", err)
 	}
-	defer telegramity.CloseGlobalClient()
+	defer func() {
+		if err := telegramity.CloseGlobalClient(); err != nil {
+			log.Printf("Failed to close global client: %v", err)
+		}
+	}()
 
 	fmt.Println("✅ Global client initialized successfully!")
 

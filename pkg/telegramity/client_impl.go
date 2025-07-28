@@ -118,7 +118,7 @@ func (c *client) Close() error {
 
 // formatErrorReport formats an error report into a Telegram message
 func (c *client) formatErrorReport(report *ErrorReport) (string, error) {
-	message := fmt.Sprintf("🚨 <b>Error Report</b>\n\n")
+	message := "🚨 <b>Error Report</b>\n\n"
 
 	// Add timestamp if configured
 	if c.config.IncludeTimestamp {
