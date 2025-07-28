@@ -14,7 +14,9 @@ A Go SDK for observability that catches errors and sends them to a Telegram bot.
 ### 2. Install the SDK
 
 ```bash
-go get github.com/somosbytes/Telegramity
+# Option 1: From GitHub (when published)
+go get github.com/somosbytes/telegramity
+
 ```
 
 ### 3. Use the Global Singleton (Recommended)
@@ -28,7 +30,7 @@ import (
     "log"
     "os"
 
-    "github.com/somosbytes/Telegramity/pkg/telegramity"
+    "github.com/somosbytes/telegramity/pkg/telegramity"
 )
 
 func main() {
@@ -136,4 +138,16 @@ go run cmd/example/singleton_example.go
 
 ## 📄 License
 
-MIT License 
+MIT License
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📚 Documentation
+
+For more detailed documentation, visit: [https://github.com/somosbytes/telegramity](https://github.com/somosbytes/telegramity) 

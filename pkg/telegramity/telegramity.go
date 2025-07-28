@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/somosbytes/Telegramity/internal/telegram/bot"
+	"github.com/somosbytes/telegramity/internal/telegram/bot"
 )
 
 func NewClient(botToken string, chatID int64, options ...ConfigOption) (Client, error) {

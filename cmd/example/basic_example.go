@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/somosbytes/Telegramity/internal/telegram/bot"
+	"github.com/somosbytes/telegramity/internal/telegram/bot"
 )
 
 func main() {

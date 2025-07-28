@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/somosbytes/Telegramity/internal/telegram/bot"
+	"github.com/somosbytes/telegramity/internal/telegram/bot"
 )
 
 // MockBotClient is a mock implementation of the BotClient interface

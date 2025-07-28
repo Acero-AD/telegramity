@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/somosbytes/Telegramity/internal/telegram/bot"
+	"github.com/somosbytes/telegramity/internal/telegram/bot"
 )
 
 // Client is the main interface for the Telegramity SDK

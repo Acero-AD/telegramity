@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/somosbytes/Telegramity/pkg/telegramity"
+	"github.com/somosbytes/telegramity"
 )
 
 func main() {
