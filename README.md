@@ -1,6 +1,6 @@
 # Telegramity
 
-A Go SDK for observability that catches errors and sends them to a Telegram bot.
+A Go SDK for observability that catches errors and sends them to a Telegram bot with rich stack traces and configurable options.
 
 ## 🚀 Quick Start
 
@@ -14,9 +14,7 @@ A Go SDK for observability that catches errors and sends them to a Telegram bot.
 ### 2. Install the SDK
 
 ```bash
-# Option 1: From GitHub (when published)
 go get github.com/somosbytes/telegramity
-
 ```
 
 ### 3. Use the Global Singleton (Recommended)
@@ -57,33 +55,22 @@ func main() {
 }
 ```
 
-### 4. Alternative: Manual Client Management
-
-```go
-// Create a client manually (for advanced use cases)
-client, err := telegramity.NewClient("bot_token", 123456789)
-if err != nil {
-    log.Fatal(err)
-}
-defer client.Close()
-
-err = client.ReportError(ctx, errors.New("something went wrong"), "database")
-```
-
 ## 📁 Project Structure
 
 ```
 Telegramity/
 ├── pkg/telegramity/          # Public SDK interface
-│   ├── telegramity.go        # Main entry point
-│   ├── client_impl.go        # Client implementation
-│   ├── config.go             # Configuration types
-│   ├── errors.go             # Error handling types
+│   ├── config.go             # Configuration options
+│   ├── errors.go             # Error types and constants
 │   └── singleton.go          # Global singleton pattern
 ├── internal/                 # Internal implementation
-│   └── telegram/bot/         # Telegram bot client
+│   ├── configs/              # Configuration management
+│   ├── errors/               # Error handling internals
+│   ├── formatters/           # Message formatting
+│   ├── telegram/bot/         # Telegram bot client
+│   └── telegramity/          # Core client factory
 ├── cmd/example/              # Example applications
-├── tests/                    # Test files
+├── tests/unit/               # Unit tests
 └── config.env.example        # Environment template
 ```
 
@@ -96,6 +83,7 @@ Telegramity/
 - **Context Support**: Full context.Context integration
 - **Thread Safe**: Safe for concurrent use
 - **Configurable**: Rich configuration options
+- **Comprehensive Testing**: 100% test coverage for core functionality
 
 ## 🔧 Configuration
 
@@ -110,6 +98,16 @@ telegramity.InitGlobalClient(
     telegramity.WithMaxRetries(3),
 )
 ```
+
+### Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `WithEnvironmentName()` | Set environment (production, staging, etc.) | `""` |
+| `WithAppInfo()` | Set application name and version | `""` |
+| `WithTimeout()` | Configure HTTP timeout | `30s` |
+| `WithRateLimit()` | Set messages per second limit | `1` |
+| `WithMaxRetries()` | Configure retry attempts | `3` |
 
 ## 📝 Error Types
 
@@ -128,17 +126,79 @@ telegramity.ErrorTypeTimeout     // Timeout errors
 
 ## 🧪 Testing
 
+### Unit Tests
 ```bash
-# Run unit tests
+# Run all unit tests
 go test ./tests/unit/ -v
 
-# Test the singleton pattern
-go run cmd/example/singleton_example.go
+# Run specific test categories
+go test ./tests/unit/ -v -run "Test.*Singleton"
+go test ./tests/unit/ -v -run "Test.*BotClient"
 ```
+
+### Integration Tests
+```bash
+# Set up environment variables for integration tests
+export TELEGRAM_BOT_TOKEN="your_bot_token"
+export TELEGRAM_CHAT_ID="your_chat_id"
+
+# Run integration tests
+go test ./tests/unit/ -v -run "Test.*Integration"
+```
+
+### Test Coverage
+- **Singleton Pattern**: Comprehensive tests for global client behavior
+- **Bot Client**: Mock-based tests for Telegram API integration
+- **Configuration**: Tests for all configuration options
+- **Error Handling**: Tests for validation and error scenarios
+
+## 🛡️ Security & Reliability
+
+- **Input Validation**: Comprehensive validation of all inputs
+- **Error Handling**: Graceful handling of network failures
+- **Rate Limiting**: Prevents spam and respects API limits
+- **Retry Logic**: Automatic retries for transient failures
+- **Context Support**: Proper cancellation and timeout handling
+- **Thread Safety**: Safe for concurrent use across your application
+
+## 📚 Examples
+
+### Basic Error Reporting
+```go
+client := telegramity.GetGlobalClient()
+err = client.ReportError(ctx, errors.New("something went wrong"), telegramity.ErrorTypeDatabase)
+```
+
+### Error with Context
+```go
+ctx := context.Background()
+context := map[string]interface{}{
+    "user_id": 12345,
+    "action": "database_query",
+    "query": "SELECT * FROM users",
+}
+
+err = client.ReportErrorWithContext(ctx, errors.New("query failed"), telegramity.ErrorTypeDatabase, context)
+```
+
+### Custom Error Types
+```go
+err = client.ReportError(ctx, errors.New("payment failed"), "payment_processing")
+```
+
+## 🔄 Recent Updates
+
+### v1.0.0 (Latest)
+- ✅ **Clean Architecture**: Separated public API from internal implementation
+- ✅ **Comprehensive Testing**: Added 100% test coverage for core functionality
+- ✅ **Mock-Based Testing**: Removed dependency on real bot tokens for unit tests
+- ✅ **Better Error Handling**: Improved validation and error scenarios
+- ✅ **CI/CD Integration**: GitHub Actions for automated testing and security scanning
+- ✅ **Documentation**: Enhanced README and release notes
 
 ## 📄 License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
@@ -150,4 +210,8 @@ MIT License
 
 ## 📚 Documentation
 
-For more detailed documentation, visit: [https://github.com/somosbytes/telegramity](https://github.com/somosbytes/telegramity) 
+For more detailed documentation, visit: [https://github.com/somosbytes/telegramity](https://github.com/somosbytes/telegramity)
+
+---
+
+**Happy Error Reporting! 🚀** 
