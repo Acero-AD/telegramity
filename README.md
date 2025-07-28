@@ -1,76 +1,139 @@
-# Telegramity - Go SDK for Error Reporting to Telegram
+# Telegramity
 
-Telegramity is a Go SDK that allows you to easily report errors from your applications directly to your Telegram bot. It's designed to be simple to use while providing powerful customization options.
+A Go SDK for observability that catches errors and sends them to a Telegram bot.
 
-## Project Structure
+## 🚀 Quick Start
+
+### 1. Set up your Telegram Bot
+
+1. Create a bot with [@BotFather](https://t.me/botfather) on Telegram
+2. Get your bot token
+3. Start a chat with your bot
+4. Get your chat ID by visiting: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+
+### 2. Install the SDK
+
+```bash
+go get github.com/somosbytes/Telegramity
+```
+
+### 3. Use the Global Singleton (Recommended)
+
+```go
+package main
+
+import (
+    "context"
+    "errors"
+    "log"
+    "os"
+
+    "github.com/somosbytes/Telegramity/pkg/telegramity"
+)
+
+func main() {
+    // Initialize once at app startup
+    err := telegramity.InitGlobalClient(
+        os.Getenv("TELEGRAM_BOT_TOKEN"),
+        123456789, // Your chat ID
+        telegramity.WithEnvironmentName("production"),
+        telegramity.WithAppInfo("MyApp", "1.0.0"),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer telegramity.CloseGlobalClient()
+
+    // Use anywhere in your code
+    client := telegramity.GetGlobalClient()
+    
+    ctx := context.Background()
+    err = client.ReportError(ctx, errors.New("database connection failed"), telegramity.ErrorTypeDatabase)
+    if err != nil {
+        log.Printf("Failed to report error: %v", err)
+    }
+}
+```
+
+### 4. Alternative: Manual Client Management
+
+```go
+// Create a client manually (for advanced use cases)
+client, err := telegramity.NewClient("bot_token", 123456789)
+if err != nil {
+    log.Fatal(err)
+}
+defer client.Close()
+
+err = client.ReportError(ctx, errors.New("something went wrong"), "database")
+```
+
+## 📁 Project Structure
 
 ```
 Telegramity/
-├── pkg/telegramity/          # Public SDK interface (what users import)
-│   ├── client.go            # Main client interface and types
-│   ├── config.go            # Configuration types and options
-│   └── telegramity.go       # Main entry point (NewClient function)
-├── internal/                # Internal implementation details
-│   ├── errors/              # Custom error types
-│   │   └── errors.go        # SDK error definitions
-│   ├── telegram/            # Telegram integration
-│   │   └── bot/             # Bot client implementation
-│   │       └── client.go    # Telegram bot client
-│   ├── formatters/          # Message formatting
-│   │   └── formatter.go     # Error message formatter
-│   └── [old API files]      # Moved from root (can be removed)
-├── cmd/example/             # Example applications
-│   └── main.go              # Basic usage example
-├── docs/                    # Documentation
-├── examples/                # Usage examples
-├── tests/                   # Test files
-│   ├── unit/                # Unit tests
-│   └── integration/         # Integration tests
-├── go.mod                   # Go module file
-├── go.sum                   # Dependency checksums
-└── README.md               # This file
+├── pkg/telegramity/          # Public SDK interface
+│   ├── telegramity.go        # Main entry point
+│   ├── client_impl.go        # Client implementation
+│   ├── config.go             # Configuration types
+│   ├── errors.go             # Error handling types
+│   └── singleton.go          # Global singleton pattern
+├── internal/                 # Internal implementation
+│   └── telegram/bot/         # Telegram bot client
+├── cmd/example/              # Example applications
+├── tests/                    # Test files
+└── config.env.example        # Environment template
 ```
 
-## Structure Explanation
+## 🎯 Features
 
-### `pkg/telegramity/` - Public API
-This is what users will import and use. Contains:
-- **client.go**: Main `Client` interface and error types
-- **config.go**: Configuration structs and option functions
-- **telegramity.go**: Main entry point with `NewClient()` function
+- **Global Singleton Pattern**: Easy to use anywhere in your app
+- **Automatic Stack Traces**: Uses `github.com/pkg/errors` for readable traces
+- **Rate Limiting**: Configurable message rate limits
+- **Retry Logic**: Automatic retries with exponential backoff
+- **Context Support**: Full context.Context integration
+- **Thread Safe**: Safe for concurrent use
+- **Configurable**: Rich configuration options
 
-### `internal/` - Implementation Details
-Internal packages that users don't need to see:
-- **errors/**: Custom error types for the SDK
-- **telegram/bot/**: Telegram Bot API integration
-- **formatters/**: Message formatting logic
+## 🔧 Configuration
 
-### `cmd/example/` - Example Applications
-Demonstrates how to use the SDK with real examples.
+```go
+telegramity.InitGlobalClient(
+    "bot_token",
+    123456789,
+    telegramity.WithEnvironmentName("production"),
+    telegramity.WithAppInfo("MyApp", "1.0.0"),
+    telegramity.WithTimeout(30*time.Second),
+    telegramity.WithRateLimit(2), // 2 messages per second
+    telegramity.WithMaxRetries(3),
+)
+```
 
-### `tests/` - Testing
-Organized test structure for unit and integration tests.
+## 📝 Error Types
 
-## Key Design Principles
+Predefined error types for common scenarios:
 
-1. **Interface-Based Design**: Clean separation between interface and implementation
-2. **Functional Options Pattern**: For flexible configuration
-3. **Error Handling**: Structured error types with proper categorization
-4. **Rate Limiting**: Built-in rate limiting for Telegram API compliance
-5. **Thread Safety**: Safe for concurrent use
+```go
+telegramity.ErrorTypeDatabase    // Database errors
+telegramity.ErrorTypeNetwork     // Network/API errors
+telegramity.ErrorTypeAuth        // Authentication errors
+telegramity.ErrorTypeValidation  // Validation errors
+telegramity.ErrorTypePayment     // Payment processing errors
+telegramity.ErrorTypeInternal    // Internal server errors
+telegramity.ErrorTypeRateLimit   // Rate limiting errors
+telegramity.ErrorTypeTimeout     // Timeout errors
+```
 
-## Next Steps
+## 🧪 Testing
 
-1. Implement the interfaces and types in `pkg/telegramity/`
-2. Create the internal implementation in `internal/`
-3. Add comprehensive tests
-4. Create usage examples
-5. Add documentation
+```bash
+# Run unit tests
+go test ./tests/unit/ -v
 
-## Development Guidelines
+# Test the singleton pattern
+go run cmd/example/singleton_example.go
+```
 
-- Keep the public API in `pkg/` simple and stable
-- Use `internal/` for implementation details
-- Follow Go conventions and idioms
-- Write tests for all public APIs
-- Document all exported functions and types 
+## 📄 License
+
+MIT License 
