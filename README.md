@@ -208,10 +208,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 4. Add tests
 5. Submit a pull request
 
-## 📚 Documentation
-
-For more detailed documentation, visit: [https://github.com/somosbytes/telegramity](https://github.com/somosbytes/telegramity)
-
 ---
 
 **Happy Error Reporting! 🚀** 
